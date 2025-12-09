@@ -24,10 +24,7 @@ namespace BC_Startup
         static void Main()
         {
             //check if another instance of BC_Startup is already running
-           if (!mutex.WaitOne(0, true))
-{
-    Environment.Exit(0);
-}
+            if (System.Diagnostics.Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetEntryAssembly().Location)).Count() > 1) System.Diagnostics.Process.GetCurrentProcess().Kill();
 
             //if nav serviec is running then launch straight away
             if (IsServiceRunning(navServiceName))
