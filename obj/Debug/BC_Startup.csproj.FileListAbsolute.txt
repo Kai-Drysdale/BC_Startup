@@ -1,0 +1,7 @@
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\obj\Debug\BC_Startup.csproj.AssemblyReference.cache
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\obj\Debug\BC_Startup.csproj.CoreCompileInputs.cache
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\bin\Debug\BC_Startup.exe.config
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\bin\Debug\BC_Startup.exe
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\bin\Debug\BC_Startup.pdb
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\obj\Debug\BC_Startup.exe
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\obj\Debug\BC_Startup.pdb
