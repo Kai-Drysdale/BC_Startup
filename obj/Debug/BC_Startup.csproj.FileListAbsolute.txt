@@ -5,3 +5,4 @@ C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\bin\Debug\BC_Startup.ex
 C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\bin\Debug\BC_Startup.pdb
 C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\obj\Debug\BC_Startup.exe
 C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\obj\Debug\BC_Startup.pdb
+C:\Users\Kai.Drysdale\source\repos\BC_Startup\BC_Startup\obj\Debug\BC_Startup.exe.config
