@@ -23,28 +23,60 @@ namespace BC_Startup
         [STAThread]
         static void Main()
         {
-            //check if another instance of BC_Startup is already running
-            if (!mutex.WaitOne(0, true)) {
-                Environment.Exit(0);
-            }
-
-            //if nav serviec is running then launch straight away
-            if (IsServiceRunning(navServiceName))
-            {               
-                StartAppShell();
-                System.Environment.Exit(0);
-            }
-
-            //nav service is not running so create the form and wait
-            if (mutex.WaitOne(0, true))
+            // Use a named mutex to prevent multiple instances
+            bool createdNew = false;
+            using (var mutex = new System.Threading.Mutex(true, "BC_Startup", out createdNew))
             {
-                //handler for when form closes
-                System.Windows.Forms.Application.ApplicationExit += new EventHandler(OnApplicationExit);
-                InitializeStartupForm();
-            }
-            else
-                System.Windows.Forms.Application.Exit();
+                try
+                {
+                    // If another instance is already running, exit
+                    if (!createdNew)
+                    {
+                        Environment.Exit(0);
+                    }
 
+                    // If the service is running, start app shell directly
+                    if (IsServiceRunning(navServiceName))
+                    {
+                        try
+                        {
+                            StartAppShell();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the exception if needed
+                            Console.WriteLine($"Error starting AppShell: {ex.Message}");
+                        }
+                        Environment.Exit(0);
+                    }
+
+                    // Nav service not running, create the form and wait
+                    System.Windows.Forms.Application.ApplicationExit += new EventHandler(OnApplicationExit);
+                    try
+                    {
+                        InitializeStartupForm();
+                        System.Windows.Forms.Application.Run();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle form initialization errors
+                        Console.WriteLine($"Error initializing startup form: {ex.Message}");
+                    }
+                }
+                catch (AbandonedMutexException)
+                {
+                    // Mutex was abandoned, but we can proceed safely
+                    Console.WriteLine("Previous instance terminated unexpectedly.");
+                    InitializeStartupForm();
+                    System.Windows.Forms.Application.Run();
+                }
+                catch (Exception ex)
+                {
+                    // Catch all unexpected exceptions
+                    Console.WriteLine($"Unexpected error: {ex.Message}");
+                    Environment.Exit(1);
+                }
+            }
         }
 
         static void InitializeStartupForm()
