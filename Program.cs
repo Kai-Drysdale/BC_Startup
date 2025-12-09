@@ -8,10 +8,8 @@ using System.ServiceProcess;
 using System.IO;
 using System.Linq;
 
-namespace BC_Startup
-{
-    internal static class Program
-    {
+namespace BC_Startup {
+    internal static class Program {
         static Mutex mutex = new Mutex(true, "{E8F5859B-B9F5-475B-B73A-2567D14A6C16}");
 
         [System.Runtime.InteropServices.DllImport("kernel32")]
@@ -21,30 +19,32 @@ namespace BC_Startup
         //static readonly string NavServiceName = "spooler";
 
         [STAThread]
-        static void Main()
-        {
+        static void Main() {
+
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) => {
+                Exception ex = (Exception)e.ExceptionObject;
+                File.AppendAllText("crashlog.txt", ex.ToString());
+            };
+
             //check if another instance of BC_Startup is already running
             if (!mutex.WaitOne(0, true)) {
                 Environment.Exit(0);
             }
 
             //if nav serviec is running then launch straight away
-            if (IsServiceRunning(navServiceName))
-            {               
+            if (IsServiceRunning(navServiceName)) {               
                 StartAppShell();
                 System.Environment.Exit(0);
             }
 
             //nav service is not running so create the form and wait
-            if (mutex.WaitOne(0, true))
-            {
+            if (mutex.WaitOne(0, true)) {
                 //handler for when form closes
                 System.Windows.Forms.Application.ApplicationExit += new EventHandler(OnApplicationExit);
                 InitializeStartupForm();
             }
             else
                 System.Windows.Forms.Application.Exit();
-
         }
 
         static void InitializeStartupForm()
