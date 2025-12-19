@@ -24,19 +24,19 @@ namespace BC_Startup
         static void Main()
         {
             //check if another instance of BC_Startup is already running
-           if (!mutex.WaitOne(0, true))
-{
-    Environment.Exit(0);
-}
+            if (!mutex.WaitOne(0, true))
+            {
+                Environment.Exit(0);
+            }
 
-            //if nav serviec is running then launch straight away
+            //if nav service is running then launch app shell straight away
             if (IsServiceRunning(navServiceName))
             {               
                 StartAppShell();
                 System.Environment.Exit(0);
             }
 
-            //nav service is not running so create the form and wait
+            //nav service is not running so create the form and wait for service to start before opening app shell
             if (mutex.WaitOne(0, true))
             {
                 //handler for when form closes
