@@ -12,39 +12,43 @@ namespace BC_Startup
 {
     internal static class Program
     {
-        static Mutex mutex = new Mutex(true, "{E8F5859B-B9F5-475B-B73A-2567D14A6C16}");
-
-        [System.Runtime.InteropServices.DllImport("kernel32")]
-        extern static UInt64 GetTickCount64();
-
+        const string Id = "af49d266-e4f4-4a63-b73c-f62c1144b584";
         static readonly string navServiceName = "MicrosoftDynamicsNavServer$LSPOS";
         //static readonly string NavServiceName = "spooler";
 
         [STAThread]
         static void Main()
         {
-            //check if another instance of BC_Startup is already running
-            if (!mutex.WaitOne(0, true))
-            {
-                Environment.Exit(0);
-            }
+            bool firstInstance;
 
-            //if nav service is running then launch app shell straight away
-            if (IsServiceRunning(navServiceName))
-            {               
-                StartAppShell();
-                System.Environment.Exit(0);
-            }
-
-            //nav service is not running so create the form and wait for service to start before opening app shell
-            if (mutex.WaitOne(0, true))
+            using (Semaphore semaphore = new Semaphore(0, 2, Id, out firstInstance))
             {
-                //handler for when form closes
-                System.Windows.Forms.Application.ApplicationExit += new EventHandler(OnApplicationExit);
-                InitializeStartupForm();
+                // this is the first instance of the program so startup
+                if (firstInstance)
+                {
+                    //if nav service is running then launch app shell straight away
+                    if (IsServiceRunning(navServiceName))
+                    {
+                        StartAppShell();
+                        System.Environment.Exit(0);
+                    }
+
+                    //nav service is not running so create the form and wait for service to start before opening app shell
+                    else
+                    {
+                        //handler for when form closes
+                        System.Windows.Forms.Application.ApplicationExit += new EventHandler(OnApplicationExit);
+                        InitializeStartupForm();
+                    }
+                }
+
+                // this isn't the first instance of the program so just exit
+                else
+                {
+                    System.Environment.Exit(0);
+                }
             }
-            else
-                System.Windows.Forms.Application.Exit();
+           
 
         }
 
@@ -210,10 +214,7 @@ namespace BC_Startup
 
         //handler for when form closes
         private static void OnApplicationExit(object sender, EventArgs e) {
-            if (mutex != null) {
-                mutex.ReleaseMutex();
-                mutex = null;
-            }
+           
         }
     }
 }
