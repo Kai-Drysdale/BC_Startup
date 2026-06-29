@@ -16,7 +16,7 @@ namespace BC_Startup {
         extern static UInt64 GetTickCount64();
 
         static readonly string navServiceName = "MicrosoftDynamicsNavServer$LSPOS";
-        //static readonly string NavServiceName = "spooler";
+        //static readonly string navServiceName = "spooler";
 
         [STAThread]
         static void Main() {
@@ -30,6 +30,7 @@ namespace BC_Startup {
             if (!mutex.WaitOne(0, true)) {
                 Environment.Exit(0);
             }
+<<<<<<< Updated upstream
 
             //if nav serviec is running then launch straight away
             if (IsServiceRunning(navServiceName)) {               
@@ -45,6 +46,8 @@ namespace BC_Startup {
             }
             else
                 System.Windows.Forms.Application.Exit();
+=======
+>>>>>>> Stashed changes
         }
 
         static void InitializeStartupForm()
@@ -162,10 +165,11 @@ namespace BC_Startup {
 
             return false; 
         }
-     
-
         static void StartAppShell()
         {
+
+            string packageFamilyName = "LSRETAILINC.LSCentral_kxgjq7wq1nzrp";
+           
             //Double check that appshell still isn't running
 
             if ((GetProcessCount("LSAppShell.Desktop.Reunion") == 0))
@@ -180,10 +184,18 @@ namespace BC_Startup {
                     UseShellExecute = true
                 });
 
-                //wait for appshell to launch
-                while (GetProcessCount("LSAppShell.Desktop.Reunion") == 0)
+                DateTime startTime = DateTime.Now;
+
+                //wait up to 10 seconds for appshell to launch
+                while (GetProcessCount("LSAppShell.Desktop.Reunion") == 0 && (DateTime.Now - startTime).TotalSeconds < 10)
                 {
                     Thread.Sleep(100);
+                }
+
+                if (GetProcessCount("LSAppShell.Desktop.Reunion") == 0)
+                {
+                    MessageBox.Show("AppShell failed to start");
+                     System.Windows.Forms.Application.Exit();
                 }
             }
            
