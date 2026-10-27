@@ -1,0 +1,38 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Test results
+TestResults/
+*.trx
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*~
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
