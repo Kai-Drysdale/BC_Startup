@@ -17,8 +17,7 @@ namespace BC_Startup {
         [STAThread]
         static void Main()
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-            {
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) => {
                 Exception ex = (Exception)e.ExceptionObject;
                 File.AppendAllText("crashlog.txt", ex.ToString());
             };
@@ -27,7 +26,7 @@ namespace BC_Startup {
 
             try {
                 acquired = mutex.WaitOne(0);
-            }   catch (AbandonedMutexException) {
+            } catch (AbandonedMutexException) {
                 //previous owner terminated without releasing the mutex.
                 //the current thread now owns it.
                 acquired = true;
