@@ -6,45 +6,52 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ServiceProcess;
 using System.IO;
-using System.Linq;
 
 namespace BC_Startup {
     internal static class Program {
-        static Mutex mutex = new Mutex(true, "{E8F5859B-B9F5-475B-B73A-2567D14A6C16}");
 
-        [System.Runtime.InteropServices.DllImport("kernel32")]
-        extern static UInt64 GetTickCount64();
-
+        static readonly Mutex mutex = new Mutex(false, "{E8F5859B-B9F5-475B-B73A-2567D14A6C16}");
         static readonly string navServiceName = "MicrosoftDynamicsNavServer$LSPOS";
         //static readonly string navServiceName = "spooler";
 
         [STAThread]
-        static void Main() {
-
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) => {
+        static void Main()
+        {
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
                 Exception ex = (Exception)e.ExceptionObject;
                 File.AppendAllText("crashlog.txt", ex.ToString());
             };
 
-            //check if another instance of BC_Startup is already running
-            if (!mutex.WaitOne(0, true)) {
-                Environment.Exit(0);
+            bool acquired = false;
+
+            try {
+                acquired = mutex.WaitOne(0);
+            }   catch (AbandonedMutexException) {
+                //previous owner terminated without releasing the mutex.
+                //the current thread now owns it.
+                acquired = true;
+            }
+            //another instance is already running, exit
+            if (!acquired) {
+                return;
             }
 
-            //if nav serviec is running then launch straight away
-            if (IsServiceRunning(navServiceName)) {               
-                StartAppShell();
-                System.Environment.Exit(0);
-            }
+            try {
+                //if the NAV service is running, launch AppShell immediately
+                if (IsServiceRunning(navServiceName)) {
+                    StartAppShell();
+                    return;
+                }
 
-            //nav service is not running so create the form and wait
-            if (mutex.WaitOne(0, true)) {
-                //handler for when form closes
-                System.Windows.Forms.Application.ApplicationExit += new EventHandler(OnApplicationExit);
+                //otherwise, display the startup form and wait
                 InitializeStartupForm();
             }
-            else
-                System.Windows.Forms.Application.Exit();
+            finally {
+                //release ownership when finished
+                mutex.ReleaseMutex();
+                mutex.Dispose();
+            }
         }
 
         static void InitializeStartupForm()
