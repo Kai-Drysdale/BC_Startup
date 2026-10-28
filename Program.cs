@@ -30,7 +30,6 @@ namespace BC_Startup {
             if (!mutex.WaitOne(0, true)) {
                 Environment.Exit(0);
             }
-<<<<<<< Updated upstream
 
             //if nav serviec is running then launch straight away
             if (IsServiceRunning(navServiceName)) {               
@@ -46,8 +45,6 @@ namespace BC_Startup {
             }
             else
                 System.Windows.Forms.Application.Exit();
-=======
->>>>>>> Stashed changes
         }
 
         static void InitializeStartupForm()
