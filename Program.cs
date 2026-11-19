@@ -167,9 +167,12 @@ namespace BC_Startup {
             const string processName = "LSAppShell.Desktop.Reunion";
             const string appCommand =@"shell:AppsFolder\LSRETAILINC.LSCentral_kxgjq7wq1nzrp!App";
 
+            //check if app shell is already running
             if (GetProcessCount(processName) > 0)
                 return;
 
+            //try to launch app shell, if it doesn't launch we try to repair it and launch again
+            //if the second launch attempt fails, we give up and exit
             for (int attempt = 0; attempt < 2; attempt++) {
                 try {
                     Process.Start(new ProcessStartInfo {
