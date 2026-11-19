@@ -161,40 +161,42 @@ namespace BC_Startup {
             return false; 
         }
 
+
         static void StartAppShell()
         {
             const string processName = "LSAppShell.Desktop.Reunion";
-            const string appCommand = @"shell:AppsFolder\LSRETAILINC.LSCentral_kxgjq7wq1nzrp!App";
+            const string appCommand =@"shell:AppsFolder\LSRETAILINC.LSCentral_kxgjq7wq1nzrp!App";
 
             if (GetProcessCount(processName) > 0)
                 return;
 
             for (int attempt = 0; attempt < 2; attempt++) {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = appCommand,
-                    UseShellExecute = true
-                });
+                try {
+                    Process.Start(new ProcessStartInfo {
+                        FileName = appCommand,
+                        UseShellExecute = true
+                    });
 
-                DateTime startTime = DateTime.Now;
+                    DateTime startTime = DateTime.Now;
 
-                while (GetProcessCount(processName) == 0 && (DateTime.Now - startTime).TotalSeconds < 10) {
-                    Thread.Sleep(100);
+                    while (GetProcessCount(processName) == 0 && (DateTime.Now - startTime).TotalSeconds < 10) {
+                        Thread.Sleep(100);
+                    }
+
+                    // AppShell launched successfully
+                    if (GetProcessCount(processName) > 0)
+                        return;
+                }
+                catch (Exception ex) {
+                    Debug.WriteLine("AppShell launch failed: " + ex);
                 }
 
-                // AppShell started successfully
-                if (GetProcessCount(processName) > 0)
-                    return;
-
-                // Only attempt repair after the first failed launch
-                if (attempt == 0) {
-                    if (!TryToRepairAppShell())
-                        break;
-                }
+                // Repair only after the first failed attempt
+                if (attempt == 0 && !TryToRepairAppShell())
+                    break;
             }
 
             MessageBox.Show("AppShell failed to start", "BC Startup", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            Application.Exit();
         }
 
         static bool TryToRepairAppShell()
