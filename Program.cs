@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.ServiceProcess;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.ServiceProcess;
-using System.IO;
 
 namespace BC_Startup {
     internal static class Program {
@@ -27,8 +28,8 @@ namespace BC_Startup {
             try {
                 acquired = mutex.WaitOne(0);
             } catch (AbandonedMutexException) {
-                //previous owner terminated without releasing the mutex.
-                //the current thread now owns it.
+                //previous owner terminated without releasing the mutex
+                //the current thread now owns it
                 acquired = true;
             }
             //another instance is already running, exit
@@ -55,9 +56,13 @@ namespace BC_Startup {
 
         static void InitializeStartupForm()
         {
-            Form StartupForm = CreateForm("BC Service is Starting, Please Wait ...");
-            Task.Run(() => BCStartup(StartupForm));
-            StartupForm.ShowDialog();
+            Form startupForm = CreateForm( "BC Service is Starting, Please Wait ...");
+
+            startupForm.Shown += (sender, e) => {
+                Task.Run(() => BCStartup(startupForm));
+            };
+
+            startupForm.ShowDialog();
         }
 
         static Form CreateForm(string Text)
@@ -155,17 +160,17 @@ namespace BC_Startup {
 
             return false; 
         }
+
         static void StartAppShell()
         {
-            string packageFamilyName = "LSRETAILINC.LSCentral_kxgjq7wq1nzrp";     
-            //Double check that appshell still isn't running
+            const string processName = "LSAppShell.Desktop.Reunion";
+            const string appCommand = @"shell:AppsFolder\LSRETAILINC.LSCentral_kxgjq7wq1nzrp!App";
 
-            if ((GetProcessCount("LSAppShell.Desktop.Reunion") == 0)) {              
-                string appCommand = "shell:AppsFolder\\LSRETAILINC.LSCentral_kxgjq7wq1nzrp!App";
+            if (GetProcessCount(processName) > 0)
+                return;
 
-                // Start the process
-                Process.Start(new ProcessStartInfo
-                {
+            for (int attempt = 0; attempt < 2; attempt++) {
+                Process.Start(new ProcessStartInfo {
                     FileName = "explorer.exe",
                     Arguments = appCommand,
                     UseShellExecute = true
@@ -173,15 +178,83 @@ namespace BC_Startup {
 
                 DateTime startTime = DateTime.Now;
 
-                //wait up to 10 seconds for appshell to launch
-                while (GetProcessCount("LSAppShell.Desktop.Reunion") == 0 && (DateTime.Now - startTime).TotalSeconds < 10) {
+                while (GetProcessCount(processName) == 0 && (DateTime.Now - startTime).TotalSeconds < 10) {
                     Thread.Sleep(100);
-                } if (GetProcessCount("LSAppShell.Desktop.Reunion") == 0) {
-                    MessageBox.Show("AppShell failed to start");
-                     System.Windows.Forms.Application.Exit();
+                }
+
+                // AppShell started successfully
+                if (GetProcessCount(processName) > 0)
+                    return;
+
+                // Only attempt repair after the first failed launch
+                if (attempt == 0) {
+                    if (!TryToRepairAppShell())
+                        break;
                 }
             }
+
+            MessageBox.Show("AppShell failed to start", "BC Startup", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Application.Exit();
         }
+
+        static bool TryToRepairAppShell()
+        {
+            string command =
+                "$ErrorActionPreference = 'Stop'; " +
+                "$package = Get-AppxPackage -Name 'LSRETAILINC.LSCentral'; " +
+                "if (-not $package) { throw 'LS Central not found' }; " +
+                "$manifest = Join-Path $package.InstallLocation 'AppxManifest.xml'; " +
+                "Add-AppxPackage -DisableDevelopmentMode -Register $manifest -ErrorAction Stop";
+
+            string encodedCommand = Convert.ToBase64String(
+                Encoding.Unicode.GetBytes(command)
+            );
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = "-NoProfile -NonInteractive -EncodedCommand " +
+                            encodedCommand,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            try
+            {
+                using (var process = Process.Start(startInfo))
+                {
+
+                    // Read both streams concurrently.
+                    Task<string> outputTask =
+                        process.StandardOutput.ReadToEndAsync();
+
+                    Task<string> errorTask =
+                        process.StandardError.ReadToEndAsync();
+
+                    process.WaitForExit();
+
+                    string output = outputTask.GetAwaiter().GetResult();
+                    string errors = errorTask.GetAwaiter().GetResult();
+
+                    if (process.ExitCode != 0)
+                    {
+                        LogError("LS Central repair failed: " + errors);
+                        return false;
+                    }
+
+                    LogError("LS Central repair completed successfully.");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError("LS Central repair exception: " + ex);
+                return false;
+            }
+        }
+
 
         static bool IsServiceRunning(string serviceName) {
             try {
@@ -194,17 +267,20 @@ namespace BC_Startup {
                 }
 
             } catch (InvalidOperationException ex) {
-                Console.WriteLine($"Error: {ex.Message}");
+                LogError($"Error: {ex.Message}");
             }
 
             return false;
         }
 
-        //handler for when form closes
-        private static void OnApplicationExit(object sender, EventArgs e) {
-            if (mutex != null) {
-                mutex.ReleaseMutex();         
-            }
+        static void LogError(string message)
+        {
+            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BC_Startup.log");
+
+            File.AppendAllText(
+                logPath,
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}"
+            );
         }
     }
 }
