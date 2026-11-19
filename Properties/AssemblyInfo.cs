@@ -29,10 +29,7 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-<<<<<<< Updated upstream
-[assembly: AssemblyVersion("1.0.0.6")]
-[assembly: AssemblyFileVersion("1.0.0.6")]
-=======
-[assembly: AssemblyVersion("1.0.1.7")]
-[assembly: AssemblyFileVersion("1.0.1.7")]
->>>>>>> Stashed changes
+
+
+[assembly: AssemblyVersion("1.0.1.8")]
+[assembly: AssemblyFileVersion("1.0.1.8")]

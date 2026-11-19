@@ -63,16 +63,13 @@ namespace BC_Startup {
         static Form CreateForm(string Text)
         {
             Icon bcicon;
-            try
-            {
+            try {
                 bcicon = new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BC.ico"));
-            }
-            catch (FileNotFoundException)
-            {
+            } catch (FileNotFoundException) {
                 bcicon = SystemIcons.Information;  
             }
-            Form StartupForm = new Form
-            { 
+
+            Form StartupForm = new Form { 
                 Text = "BC Startup",
                 Width = 450,
                 Height = 120,
@@ -82,9 +79,7 @@ namespace BC_Startup {
                 FormBorderStyle = FormBorderStyle.None,
             };
 
-
-            System.Windows.Forms.Label label = new System.Windows.Forms.Label
-            {
+            System.Windows.Forms.Label label = new System.Windows.Forms.Label {
                 Text = Text,
                 AutoSize = false,
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -97,8 +92,6 @@ namespace BC_Startup {
 
             label.Left = (StartupForm.Width - label.Width) / 2;
             label.Top = (StartupForm.Height - label.Height) / 2;
-
-
             StartupForm.Controls.Add(label);
             
             return StartupForm;
@@ -106,8 +99,7 @@ namespace BC_Startup {
 
         static void CloseForm(Form Form)
         {
-            Form.Invoke((MethodInvoker)delegate
-            {
+            Form.Invoke((MethodInvoker)delegate {
                 Form.Close();
             });
         }
@@ -126,8 +118,7 @@ namespace BC_Startup {
             if (WaitForServiceToStart(navServiceName))
                 StartAppShell();
 
-            else
-            {
+            else {
                 MessageBox.Show("Timeout exceeded for " + navServiceName);
                 System.Windows.Forms.Application.Exit();
             }
@@ -141,21 +132,17 @@ namespace BC_Startup {
             bool flag = false;          
             DateTime startTime = DateTime.Now;
 
-            while (!flag)
-            {
+            while (!flag) {
                 ServiceController serviceController = new ServiceController(serviceName);
 
-                try
-                {
+                try {
                     ServiceControllerStatus serviceStatus = serviceController.Status;
 
                     //ff the service is running, return true
                     if (serviceStatus == ServiceControllerStatus.Running)                   
                        return true;
                     
-                }
-                catch (InvalidOperationException ex)
-                {
+                } catch (InvalidOperationException ex) {
                     Console.WriteLine($"Error: {ex.Message}");
                 }
 
@@ -170,13 +157,10 @@ namespace BC_Startup {
         }
         static void StartAppShell()
         {
-
-            string packageFamilyName = "LSRETAILINC.LSCentral_kxgjq7wq1nzrp";
-           
+            string packageFamilyName = "LSRETAILINC.LSCentral_kxgjq7wq1nzrp";     
             //Double check that appshell still isn't running
 
-            if ((GetProcessCount("LSAppShell.Desktop.Reunion") == 0))
-            {              
+            if ((GetProcessCount("LSAppShell.Desktop.Reunion") == 0)) {              
                 string appCommand = "shell:AppsFolder\\LSRETAILINC.LSCentral_kxgjq7wq1nzrp!App";
 
                 // Start the process
@@ -190,18 +174,13 @@ namespace BC_Startup {
                 DateTime startTime = DateTime.Now;
 
                 //wait up to 10 seconds for appshell to launch
-                while (GetProcessCount("LSAppShell.Desktop.Reunion") == 0 && (DateTime.Now - startTime).TotalSeconds < 10)
-                {
+                while (GetProcessCount("LSAppShell.Desktop.Reunion") == 0 && (DateTime.Now - startTime).TotalSeconds < 10) {
                     Thread.Sleep(100);
-                }
-
-                if (GetProcessCount("LSAppShell.Desktop.Reunion") == 0)
-                {
+                } if (GetProcessCount("LSAppShell.Desktop.Reunion") == 0) {
                     MessageBox.Show("AppShell failed to start");
                      System.Windows.Forms.Application.Exit();
                 }
             }
-           
         }
 
         static bool IsServiceRunning(string serviceName) {
@@ -214,8 +193,7 @@ namespace BC_Startup {
                     return true;
                 }
 
-            }
-            catch (InvalidOperationException ex) {
+            } catch (InvalidOperationException ex) {
                 Console.WriteLine($"Error: {ex.Message}");
             }
 
@@ -225,8 +203,7 @@ namespace BC_Startup {
         //handler for when form closes
         private static void OnApplicationExit(object sender, EventArgs e) {
             if (mutex != null) {
-                mutex.ReleaseMutex();
-                mutex = null;
+                mutex.ReleaseMutex();         
             }
         }
     }
