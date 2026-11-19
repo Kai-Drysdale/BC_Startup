@@ -170,9 +170,9 @@ namespace BC_Startup {
                 return;
 
             for (int attempt = 0; attempt < 2; attempt++) {
-                Process.Start(new ProcessStartInfo {
-                    FileName = "explorer.exe",
-                    Arguments = appCommand,
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = appCommand,
                     UseShellExecute = true
                 });
 
